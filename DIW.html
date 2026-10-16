@@ -1,0 +1,611 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>NEXO Prototipo v01</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: columna de lectura de 980px. Cuatro bloques de trabajo de la sesión 5 (tarea, recorrido, prototipo, prueba) con el prototipo clicable como pieza central dentro de un marco de navegador de baja fidelidad. */
+:root{
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --bg:#EEF2F7; --surface:#FFFFFF; --surface-2:#F5F8FB; --field:#E8EEF5;
+  --fg:#14263D; --muted:#556579; --line:#D3DBE6;
+  --primary:#1A3A5C; --on-primary:#FFFFFF;
+  --gold:#8F6F14; --teal:#1F7494; --green:#2F7050; --red:#A83030;
+  --red-bg:#FBECEC; --green-bg:#E8F3ED; --teal-bg:#E6F2F7;
+  --focus:#1F7494;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1A29; --surface:#15263A; --surface-2:#1B2F46; --field:#1E3350;
+    --fg:#E6EDF5; --muted:#9AAEC4; --line:#2B4160;
+    --primary:#2F6AA3; --on-primary:#FFFFFF;
+    --gold:#D9B85C; --teal:#5DB3D4; --green:#6CC196; --red:#F08080;
+    --red-bg:#3A1D22; --green-bg:#173528; --teal-bg:#12313F;
+    --focus:#5DB3D4; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1A29; --surface:#15263A; --surface-2:#1B2F46; --field:#1E3350;
+  --fg:#E6EDF5; --muted:#9AAEC4; --line:#2B4160;
+  --primary:#2F6AA3; --on-primary:#FFFFFF;
+  --gold:#D9B85C; --teal:#5DB3D4; --green:#6CC196; --red:#F08080;
+  --red-bg:#3A1D22; --green-bg:#173528; --teal-bg:#12313F;
+  --focus:#5DB3D4; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:15px/1.55 var(--body);
+  padding-block:40px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+h1,h2,h3,h4{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(2rem,5vw,3.1rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.05rem;font-weight:600}
+p{margin:0}
+.eyebrow{font:500 .72rem/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.muted{color:var(--muted)}
+.sec{display:flex;flex-direction:column;gap:20px;min-width:0}
+.sec>header p{max-width:65ch;color:var(--muted);margin-top:8px}
+
+/* cabecera */
+.top{display:flex;flex-direction:column;gap:14px}
+.top .sub{font-size:1.1rem;color:var(--muted);max-width:60ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font:500 .75rem/1.4 var(--mono);color:var(--muted)}
+
+/* tarjetas */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.task{margin:0;padding:24px 28px;background:var(--primary);color:var(--on-primary);border-radius:12px;font:700 clamp(1.15rem,2.4vw,1.5rem)/1.3 var(--display);text-wrap:balance}
+.task small{display:block;font:500 .72rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;opacity:.8;margin-bottom:10px}
+.pills{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.pills li{border:1.5px dashed var(--line);border-radius:999px;padding:4px 12px;font-size:.88rem;color:var(--muted)}
+.pills.used li{border:2px solid var(--teal);color:var(--fg);font-weight:500}
+.note{font-size:.85rem;color:var(--muted);margin-top:12px}
+
+/* seis piezas */
+.pieces{display:grid;grid-template-columns:150px 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.pieces>div{padding:12px 16px;border-top:1px solid var(--line);min-width:0}
+.pieces>div:nth-child(-n+2){border-top:0}
+.pieces .k{font:500 .75rem/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--teal);background:var(--surface-2)}
+@media (max-width:520px){.pieces{grid-template-columns:1fr}.pieces .k{border-top:1px solid var(--line);padding-bottom:0}.pieces>div:nth-child(2){border-top:0}.pieces>div:nth-child(1){border-top:0}}
+
+/* recorrido */
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:stretch;gap:8px}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.step .tag{font:500 .7rem/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.step b{font:700 1rem/1.2 var(--display)}
+.step span{font-size:.88rem;color:var(--muted)}
+.arr{align-self:center;color:var(--teal);font-size:1.4rem;font-weight:700}
+.branch{border:1.5px solid var(--red);background:var(--red-bg);border-radius:12px;padding:14px 18px;font-size:.92rem}
+.branch b{color:var(--red);font:600 .75rem/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-right:8px}
+@media (max-width:760px){.flow{grid-template-columns:1fr}.arr{transform:rotate(90deg);justify-self:center}}
+
+/* escenario del prototipo */
+.stagebar{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.stagebar .spacer{flex:1}
+.btn{font:500 .88rem/1 var(--body);border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:10px 14px;cursor:pointer}
+.btn:hover{background:var(--surface-2)}
+.state{font:500 .78rem/1 var(--mono);letter-spacing:.06em;padding:7px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface)}
+.state[data-s="Error"]{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.state[data-s="Durante"]{border-color:var(--teal);color:var(--teal);background:var(--teal-bg)}
+.state[data-s="Éxito"]{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+.blind-toggle{display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--muted)}
+.is-blind .state,.is-blind .hint{display:none}
+.hint{font-size:.85rem;color:var(--muted)}
+
+.frame{container-type:inline-size;max-width:760px;width:100%;margin:0 auto;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface);position:relative}
+.chrome{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.chrome i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.chrome .url{margin-left:10px;font:500 .72rem/1 var(--mono);color:var(--muted)}
+
+/* dentro del prototipo (low-fi) */
+.pf-nav{background:var(--primary);color:var(--on-primary);display:flex;align-items:center;gap:16px;padding:10px 16px;flex-wrap:wrap}
+.pf-logo{display:flex;align-items:center;gap:8px;font:800 .95rem/1 var(--display);letter-spacing:.04em;margin-right:auto}
+.pf-logo svg{width:22px;height:22px}
+.pf-nav a{color:var(--on-primary);font-size:.78rem;font-weight:500;text-decoration:none;opacity:.92;cursor:default}
+.pf-avatar{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--on-primary);display:grid;place-items:center;cursor:default}
+.pf-main{padding:18px 20px 22px;display:flex;flex-direction:column;gap:14px}
+.pf-back{align-self:flex-start;font-size:.78rem;color:var(--muted);background:none;border:0;padding:0;cursor:pointer}
+.pf-back:hover{color:var(--fg)}
+.pf-title{font:800 1.6rem/1.1 var(--display)}
+.panel{border:1.5px solid var(--line);border-radius:6px;background:var(--surface)}
+.panel>h4{font:600 .82rem/1 var(--body);padding:10px 14px;background:var(--surface-2);border-bottom:1.5px solid var(--line);border-radius:5px 5px 0 0}
+.panel .body{padding:14px;display:flex;flex-direction:column;gap:14px}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@container (max-width:560px){.trio{grid-template-columns:1fr}}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld>label,.lbl{font:500 .78rem/1.3 var(--body);display:flex;align-items:center;gap:6px}
+.fld>label svg{width:16px;height:16px;flex:none}
+.inp{width:100%;font:400 .9rem/1.3 var(--body);color:var(--fg);background:var(--field);border:1.5px solid var(--line);border-radius:4px;padding:9px 10px;min-height:38px}
+textarea.inp{min-height:84px;resize:vertical}
+.inp::placeholder{color:var(--muted)}
+.fld.bad .inp{border-color:var(--red);background:var(--red-bg)}
+.err{font-size:.76rem;color:var(--red);font-weight:500}
+.banner{border:1.5px solid var(--red);background:var(--red-bg);color:var(--red);border-radius:6px;padding:10px 14px;font-size:.85rem;font-weight:600}
+.tags{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tag{font:500 .78rem/1 var(--body);border:1.5px solid var(--line);background:var(--field);color:var(--fg);border-radius:999px;padding:7px 12px;cursor:pointer}
+.tag[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.tag.add{width:30px;height:30px;padding:0;display:grid;place-items:center;font-size:1rem}
+#newTag{width:130px;padding:6px 10px;min-height:0}
+.drop{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;border:1.5px dashed var(--muted);border-radius:6px;padding:20px 12px;cursor:pointer;background:var(--field);font-size:.8rem;color:var(--muted)}
+.drop:hover,.drop.over,.drop:focus-within{border-color:var(--teal);color:var(--fg)}
+.drop.has{border-style:solid;border-color:var(--green);color:var(--fg)}
+.drop.bad{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.drop svg{width:26px;height:26px}
+.drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.drop small{font-size:.7rem;opacity:.8}
+.confirm{border:1.5px solid var(--teal);background:var(--teal-bg);border-radius:6px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.85rem}
+.confirm span{flex:1 1 200px;font-weight:600}
+.actions{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pbtn{font:600 .9rem/1 var(--body);border-radius:6px;padding:13px 22px;cursor:pointer;border:1.5px solid var(--line);background:var(--surface);color:var(--fg)}
+.pbtn.primary{background:var(--primary);color:var(--on-primary);border-color:var(--primary);min-width:170px}
+.pbtn:disabled{cursor:progress;opacity:.9}
+.pbtn.sm{padding:8px 14px;font-size:.82rem}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;margin-right:8px;vertical-align:-1px;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
+.ok{align-items:center;text-align:center;padding-block:34px}
+.ok .tick{width:56px;height:56px;border-radius:50%;background:var(--green-bg);color:var(--green);border:2px solid var(--green);display:grid;place-items:center;font-size:1.6rem;font-weight:700}
+.ok dl{margin:6px 0 0;display:grid;grid-template-columns:auto 1fr;gap:6px 16px;text-align:left;border:1.5px solid var(--line);border-radius:6px;padding:14px 18px;background:var(--surface-2);max-width:100%}
+.ok dt{font:500 .72rem/1.6 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.ok dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.toast{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:var(--fg);color:var(--bg);font-size:.78rem;font-weight:500;padding:8px 14px;border-radius:999px;pointer-events:none}
+
+/* comprobación y prueba */
+.check{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.check label{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--teal);flex:none}
+.check input:checked+span{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--teal)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.rule h3{margin-bottom:8px}
+.rule p{font-size:.9rem;color:var(--muted)}
+.rule.stop{border-color:var(--red)}
+.rule.stop h3{color:var(--red)}
+.say{font-weight:600;color:var(--fg)}
+.obs{display:grid;gap:12px}
+.obsrow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:700px){.obsrow{grid-template-columns:1fr}}
+.obs .col{display:flex;flex-direction:column;gap:6px;min-width:0}
+.obs .col>label{font:500 .72rem/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.big{font:700 1.05rem/1.4 var(--display)}
+.just{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:700 1.05rem/1.4 var(--display)}
+.just .inp{flex:1 1 200px;width:auto}
+.out{display:grid;grid-template-columns:36px 1fr;gap:10px 14px;align-items:center}
+.out .l{width:32px;height:32px;border-radius:8px;background:var(--primary);color:var(--on-primary);display:grid;place-items:center;font:700 .85rem/1 var(--display)}
+.out b{font-weight:600}
+footer{font-size:.82rem;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+</style>
+
+<div class="wrap" id="root">
+
+<header class="top">
+  <p class="eyebrow">DIW · 2.º DAW · UD1 · Sesión 5</p>
+  <h1>NEXO · Prototipo v01</h1>
+  <p class="sub">Wireframe C, «disponibilidad primero», convertido en un recorrido que se puede pulsar y probar con otra persona.</p>
+  <div class="meta">
+    <span class="chip">Archivo: NEXO_prototipo_v01</span>
+    <span class="chip">Baja fidelidad</span>
+    <span class="chip">Pantalla: Crear evento</span>
+  </div>
+</header>
+
+<!-- RECUPERA -->
+<section class="sec" id="tarea">
+  <header>
+    <p class="eyebrow">Recupera · 10 min</p>
+    <h2>Una sola tarea para probar</h2>
+    <p>Se parte del wireframe elegido sin cambiar colores, tipografías ni decoración. Solo cambia lo que hace falta para que se pueda recorrer.</p>
+  </header>
+  <blockquote class="task"><small>Tarea que se prueba</small>Crear un evento indicando fecha, lugar y plazas, y guardarlo.</blockquote>
+  <div class="two">
+    <div class="card">
+      <h3>Elementos que la persona tiene que usar</h3>
+      <ul class="pills used">
+        <li>Fecha *</li><li>Lugar *</li><li>Plazas *</li><li>Título del evento *</li><li>Guardar evento</li>
+      </ul>
+      <p class="note">Son los cinco elementos que hay que rodear en el wireframe.</p>
+    </div>
+    <div class="card">
+      <h3>Siguen en pantalla, pero no se evalúan</h3>
+      <ul class="pills">
+        <li>Descripción</li><li>Etiquetas</li><li>Imagen del evento</li><li>Cancelar</li><li>Menú superior</li>
+      </ul>
+      <p class="note">Forman parte del wireframe. Cancelar y Volver responden, el menú superior no.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ENTENDER / RECORRIDO -->
+<section class="sec" id="recorrido">
+  <header>
+    <p class="eyebrow">Recorrido · antes de conectar</p>
+    <h2>El camino en cajas y flechas</h2>
+  </header>
+  <div class="flow">
+    <div class="step"><span class="tag">Pantalla</span><b>Formulario vacío</b><span>Veo qué datos pide el evento.</span></div>
+    <span class="arr" aria-hidden="true">→</span>
+    <div class="step"><span class="tag">Acción</span><b>Relleno y pulso Guardar</b><span>Fecha, lugar, plazas y título.</span></div>
+    <span class="arr" aria-hidden="true">→</span>
+    <div class="step"><span class="tag">Estado</span><b>Guardando evento…</b><span>Sé que la acción ha empezado.</span></div>
+    <span class="arr" aria-hidden="true">→</span>
+    <div class="step"><span class="tag">Pantalla final</span><b>Evento creado ✓</b><span>Sé que terminó y veo el resumen.</span></div>
+  </div>
+  <div class="branch"><b>Error</b>Si falta un dato obligatorio, los campos se marcan en rojo, aparece un aviso arriba y la persona vuelve a rellenar sin perder lo escrito.</div>
+  <div class="pieces" role="table" aria-label="Seis piezas mínimas">
+    <div class="k" role="cell">1 · Inicio</div><div role="cell">Se abre en «Crear evento» con el formulario vacío.</div>
+    <div class="k" role="cell">2 · Acción</div><div role="cell">Rellenar los campos obligatorios y pulsar «Guardar evento».</div>
+    <div class="k" role="cell">3 · Respuesta</div><div role="cell">El botón cambia y la pantalla sustituye el formulario por la confirmación.</div>
+    <div class="k" role="cell">4 · Estado</div><div role="cell">Antes, error, durante («Guardando evento…») y éxito.</div>
+    <div class="k" role="cell">5 · Continuidad</div><div role="cell">Los errores se corrigen sin perder datos. Cancelar y Volver piden confirmación.</div>
+    <div class="k" role="cell">6 · Final</div><div role="cell">«Evento creado» con el resumen y la opción de crear otro.</div>
+  </div>
+</section>
+
+<!-- PROTOTIPO -->
+<section class="sec" id="prototipo">
+  <header>
+    <p class="eyebrow">Construye · prototipo navegable</p>
+    <h2>Pruébalo tú mismo</h2>
+    <p>Rellena el formulario y pulsa «Guardar evento». Prueba también a guardar con campos vacíos para ver el estado de error.</p>
+  </header>
+  <div id="stage" class="sec">
+    <div class="stagebar">
+      <span class="state" id="stateChip" data-s="Antes">Estado: Antes</span>
+      <span class="spacer"></span>
+      <label class="blind-toggle"><input type="checkbox" id="blind"> Modo prueba (oculta anotaciones)</label>
+      <button class="btn" id="resetBtn" type="button">Reiniciar</button>
+    </div>
+    <div class="frame" id="frame">
+      <div class="chrome"><i></i><i></i><i></i><span class="url">nexo.local/eventos/crear</span></div>
+      <nav class="pf-nav" aria-label="Menú de NEXO">
+        <span class="pf-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7l10 10M17 7L7 17"/></svg>NEXO
+        </span>
+        <a data-dead>Inicio</a><a data-dead>Eventos</a><a data-dead>Entradas</a><a data-dead>Contacto</a>
+        <span class="pf-avatar" data-dead aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+      </nav>
+
+      <main class="pf-main" id="screenForm">
+        <button class="pf-back" id="btnBack" type="button">‹ Volver</button>
+        <h3 class="pf-title">Crear evento</h3>
+        <div class="banner" id="errBanner" role="alert" hidden></div>
+
+        <form id="form" novalidate>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <section class="panel">
+              <h4>Disponibilidad</h4>
+              <div class="body"><div class="trio">
+                <div class="fld" id="f-fecha">
+                  <label for="fecha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Fecha *</label>
+                  <input class="inp" type="date" id="fecha" required>
+                  <p class="err" hidden></p>
+                </div>
+                <div class="fld" id="f-lugar">
+                  <label for="lugar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Lugar *</label>
+                  <select class="inp" id="lugar" required>
+                    <option value="">Selecciona un lugar</option>
+                    <option>Centro joven</option>
+                    <option>Biblioteca municipal</option>
+                    <option>Polideportivo</option>
+                    <option>Plaza Mayor</option>
+                  </select>
+                  <p class="err" hidden></p>
+                </div>
+                <div class="fld" id="f-plazas">
+                  <label for="plazas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5S15.5 16.500 15.500 20M16 4.500a3.500 3.500 0 010 7M18 14.800c2 .6 3.500 2.200 3.500 5.200"/></svg>Plazas *</label>
+                  <input class="inp" type="number" id="plazas" min="1" step="1" placeholder="Nº de plazas" inputmode="numeric" required>
+                  <p class="err" hidden></p>
+                </div>
+              </div></div>
+            </section>
+
+            <section class="panel">
+              <h4>Datos del evento</h4>
+              <div class="body">
+                <div class="fld" id="f-titulo">
+                  <label for="titulo">Título del evento *</label>
+                  <input class="inp" type="text" id="titulo" maxlength="80" required>
+                  <p class="err" hidden></p>
+                </div>
+                <div class="fld">
+                  <label for="desc">Descripción</label>
+                  <textarea class="inp" id="desc" placeholder="Escribe aquí la descripción del evento..."></textarea>
+                </div>
+                <div class="fld">
+                  <span class="lbl" id="tagsLbl">Etiquetas</span>
+                  <div class="tags" id="tags" role="group" aria-labelledby="tagsLbl">
+                    <button class="tag" type="button" aria-pressed="false">Música</button>
+                    <button class="tag" type="button" aria-pressed="false">Cultura</button>
+                    <button class="tag" type="button" aria-pressed="false">Concierto</button>
+                    <button class="tag add" id="addTag" type="button" aria-label="Añadir etiqueta">+</button>
+                    <input class="inp" id="newTag" type="text" maxlength="20" placeholder="Nueva etiqueta" hidden aria-label="Nueva etiqueta">
+                  </div>
+                </div>
+                <div class="fld">
+                  <span class="lbl">Imagen del evento</span>
+                  <label class="drop" id="drop" for="imagen">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.800"/><path d="M21 16l-5-5-8 8"/></svg>
+                    <span id="dropMsg">Arrastra una imagen o selecciona un archivo</span>
+                    <small>PNG, JPG (máx. 5 MB)</small>
+                    <input type="file" id="imagen" accept="image/png,image/jpeg">
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <div class="confirm" id="cancelConfirm" role="alertdialog" aria-label="Confirmar cancelación" hidden>
+              <span>¿Descartar el evento? Se perderá lo que has escrito.</span>
+              <button class="pbtn sm" type="button" id="keepEditing">Seguir editando</button>
+              <button class="pbtn sm primary" type="button" id="discard" style="min-width:0">Descartar</button>
+            </div>
+
+            <div class="actions">
+              <button class="pbtn" type="button" id="btnCancel">Cancelar</button>
+              <button class="pbtn primary" type="submit" id="btnSave">Guardar evento</button>
+            </div>
+          </div>
+        </form>
+      </main>
+
+      <main class="pf-main ok" id="screenOk" hidden>
+        <div class="tick" aria-hidden="true">✓</div>
+        <h3 class="pf-title">Evento creado</h3>
+        <p class="muted">Tu evento está guardado con estos datos.</p>
+        <dl id="summary"></dl>
+        <button class="pbtn primary" type="button" id="btnAgain">Crear otro evento</button>
+      </main>
+      <div class="toast" id="toast" role="status" hidden></div>
+    </div>
+    <p class="hint">Las pestañas del menú superior no forman parte de la tarea y responden con un aviso.</p>
+  </div>
+</section>
+
+<!-- COMPROBACIÓN -->
+<section class="sec" id="comprobacion">
+  <header>
+    <p class="eyebrow">Antes de probar</p>
+    <h2>Comprobación en solitario</h2>
+    <p>Recorre el prototipo desde el inicio sin hacer trampas y marca cada punto cuando lo cumpla.</p>
+  </header>
+  <ul class="check">
+    <li><label><input type="checkbox" data-save id="ck1"><span>Empiezo desde la pantalla inicial.</span></label></li>
+    <li><label><input type="checkbox" data-save id="ck2"><span>Sé cuál es la acción principal.</span></label></li>
+    <li><label><input type="checkbox" data-save id="ck3"><span>Cada clic importante produce una respuesta.</span></label></li>
+    <li><label><input type="checkbox" data-save id="ck4"><span>Los estados importantes se entienden.</span></label></li>
+    <li><label><input type="checkbox" data-save id="ck5"><span>Puedo avanzar sin enlaces rotos.</span></label></li>
+    <li><label><input type="checkbox" data-save id="ck6"><span>Reconozco cuándo termina la tarea.</span></label></li>
+  </ul>
+</section>
+
+<!-- PRUEBA -->
+<section class="sec" id="prueba">
+  <header>
+    <p class="eyebrow">Prueba entre pares · 20 min</p>
+    <h2>Una persona usa, la otra observa</h2>
+  </header>
+  <div class="rules">
+    <div class="card rule"><h3>1 · Da la tarea</h3><p>Di solo:</p><p class="say">«Crea un evento para el próximo sábado en el Centro joven con 20 plazas y guárdalo.»</p><p style="margin-top:8px">No expliques la interfaz.</p></div>
+    <div class="card rule"><h3>2 · Observa</h3><p>Anota hechos: por dónde pulsa primero, dónde se detiene, cuándo vuelve atrás y qué pregunta.</p></div>
+    <div class="card rule stop"><h3>3 · No ayudes</h3><p>No digas «ese botón», «ahora vuelve» ni «tienes que…». Si ayudas, ocultas el problema.</p></div>
+    <div class="card rule"><h3>4 · Pregunta al final</h3><p>¿Qué te resultó claro? ¿Dónde dudaste? ¿Qué esperabas que ocurriera?</p></div>
+  </div>
+</section>
+
+<!-- REGISTRO -->
+<section class="sec" id="registro">
+  <header>
+    <p class="eyebrow">Registra</p>
+    <h2>De lo que ves a lo que cambias</h2>
+    <p>Anota 2 o 3 observaciones concretas, sin «le gustó» ni «no le gustó». Fórmula: «Observé ___ durante ___; puede indicar ___; probaré ___».</p>
+  </header>
+  <div class="obs">
+    <div class="obsrow">
+      <div class="col"><label for="o1a">Hecho observado 1</label><textarea class="inp" id="o1a" data-save placeholder="Ej.: Pulsó Guardar con el título vacío y no supo qué campo faltaba."></textarea></div>
+      <div class="col"><label for="o1b">Posible problema</label><textarea class="inp" id="o1b" data-save placeholder="Ej.: El aviso de error no indica dónde corregir."></textarea></div>
+      <div class="col"><label for="o1c">Cambio a probar</label><textarea class="inp" id="o1c" data-save placeholder="Ej.: Marcar el campo y mostrar el mensaje debajo."></textarea></div>
+    </div>
+    <div class="obsrow">
+      <div class="col"><label for="o2a">Hecho observado 2</label><textarea class="inp" id="o2a" data-save></textarea></div>
+      <div class="col"><label for="o2b">Posible problema</label><textarea class="inp" id="o2b" data-save></textarea></div>
+      <div class="col"><label for="o2c">Cambio a probar</label><textarea class="inp" id="o2c" data-save></textarea></div>
+    </div>
+    <div class="obsrow">
+      <div class="col"><label for="o3a">Hecho observado 3</label><textarea class="inp" id="o3a" data-save></textarea></div>
+      <div class="col"><label for="o3b">Posible problema</label><textarea class="inp" id="o3b" data-save></textarea></div>
+      <div class="col"><label for="o3c">Cambio a probar</label><textarea class="inp" id="o3c" data-save></textarea></div>
+    </div>
+  </div>
+</section>
+
+<!-- ITERA -->
+<section class="sec" id="itera">
+  <header>
+    <p class="eyebrow">Itera · 10 min</p>
+    <h2>Corrige una sola fricción</h2>
+    <p>Cambia una decisión concreta para poder relacionar el cambio con la observación que lo provocó. Después repite exactamente la misma tarea.</p>
+  </header>
+  <div class="obsrow obs">
+    <div class="col"><label for="i1">Antes</label><textarea class="inp" id="i1" data-save placeholder="El prototipo hacía algo, pero la persona no lo entendía."></textarea></div>
+    <div class="col"><label for="i2">Cambio</label><textarea class="inp" id="i2" data-save placeholder="Qué estado, feedback, orden o conexión modifico."></textarea></div>
+    <div class="col"><label for="i3">Después</label><textarea class="inp" id="i3" data-save placeholder="Qué pasó al repetir la misma tarea."></textarea></div>
+  </div>
+  <div class="card">
+    <p class="eyebrow" style="margin-bottom:12px">Justificación</p>
+    <div class="just">
+      <span>Cambié</span><input class="inp" id="j1" data-save aria-label="Qué cambié">
+      <span>porque observé</span><input class="inp" id="j2" data-save aria-label="Qué observé">
+    </div>
+  </div>
+</section>
+
+<!-- SALIDA -->
+<section class="sec" id="salida">
+  <header>
+    <p class="eyebrow">Salida de la sesión</p>
+    <h2>Qué debe quedar guardado</h2>
+  </header>
+  <div class="card out">
+    <span class="l">A</span><div><b>Prototipo low-fi navegable.</b> <span class="muted">El recorrido mínimo funciona (esta página).</span></div>
+    <span class="l">B</span><div><b>Tarea probada.</b> <span class="muted">Una frase concreta y comprensible.</span></div>
+    <span class="l">C</span><div><b>2–3 observaciones.</b> <span class="muted">Hechos vistos durante la prueba entre pares.</span></div>
+    <span class="l">D</span><div><b>1 iteración.</b> <span class="muted">Un cambio hecho a partir de una observación.</span></div>
+    <span class="l">E</span><div><b>Justificación.</b> <span class="muted">«Cambié ___ porque observé ___».</span></div>
+  </div>
+  <footer>Nombre recomendado para la versión corregida: NEXO_prototipo_v02. Conserva también la v01.</footer>
+</section>
+
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var store={
+    get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},
+    set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  };
+
+  /* guardado ligero de las notas y la comprobación */
+  document.querySelectorAll('[data-save]').forEach(function(el){
+    var key='nexo-v01-'+el.id, saved=store.get(key);
+    if(saved!==null){ if(el.type==='checkbox'){el.checked=saved==='1'} else {el.value=saved} }
+    el.addEventListener('input',function(){store.set(key,el.type==='checkbox'?(el.checked?'1':'0'):el.value)});
+    el.addEventListener('change',function(){store.set(key,el.type==='checkbox'?(el.checked?'1':'0'):el.value)});
+  });
+
+  /* estado visible */
+  var chip=$('stateChip');
+  function setState(s){chip.textContent='Estado: '+s;chip.dataset.s=s}
+  $('blind').addEventListener('change',function(){$('stage').classList.toggle('is-blind',this.checked)});
+
+  /* aviso breve dentro del marco */
+  var toastTimer;
+  function toast(msg){var t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.hidden=true},1700)}
+  document.querySelectorAll('[data-dead]').forEach(function(el){el.addEventListener('click',function(){toast('Fuera de esta prueba')})});
+
+  /* campos obligatorios */
+  var fields=['fecha','lugar','plazas','titulo'];
+  var msgs={fecha:'Indica la fecha del evento.',lugar:'Elige un lugar.',plazas:'Indica cuántas plazas hay.',titulo:'Escribe el título del evento.'};
+  function problem(id){
+    var v=$(id).value.trim();
+    if(v==='') return msgs[id];
+    if(id==='plazas' && !(Number(v)>=1)) return 'Las plazas deben ser al menos 1.';
+    return '';
+  }
+  function showErr(id,text){
+    var box=$('f-'+id), p=box.querySelector('.err');
+    box.classList.toggle('bad',!!text);
+    p.hidden=!text; p.textContent=text||'';
+    $(id).setAttribute('aria-invalid',text?'true':'false');
+  }
+  function refreshBanner(){
+    var n=fields.filter(function(id){return $('f-'+id).classList.contains('bad')}).length;
+    var b=$('errBanner');
+    if(n===0){b.hidden=true;if(chip.dataset.s==='Error')setState('Antes');return}
+    b.hidden=false;
+    b.textContent='No se pudo guardar: '+(n===1?'falta 1 campo obligatorio.':'faltan '+n+' campos obligatorios.');
+  }
+  fields.forEach(function(id){
+    $(id).addEventListener('input',function(){ if($('f-'+id).classList.contains('bad')){showErr(id,problem(id));refreshBanner()} });
+    $(id).addEventListener('change',function(){ if($('f-'+id).classList.contains('bad')){showErr(id,problem(id));refreshBanner()} });
+  });
+
+  /* etiquetas */
+  var tagBox=$('tags'), newTag=$('newTag');
+  tagBox.addEventListener('click',function(e){
+    var b=e.target.closest('.tag'); if(!b||b.id==='addTag')return;
+    b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')==='true'?'false':'true');
+  });
+  $('addTag').addEventListener('click',function(){newTag.hidden=false;newTag.focus()});
+  newTag.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){
+      e.preventDefault();
+      var v=newTag.value.trim();
+      if(v){var b=document.createElement('button');b.type='button';b.className='tag';b.setAttribute('aria-pressed','true');b.textContent=v;tagBox.insertBefore(b,$('addTag'))}
+      newTag.value='';newTag.hidden=true;$('addTag').focus();
+    } else if(e.key==='Escape'){newTag.value='';newTag.hidden=true;$('addTag').focus()}
+  });
+
+  /* imagen */
+  var drop=$('drop'), file=$('imagen'), dropMsg=$('dropMsg'), defaultDrop=dropMsg.textContent;
+  function showFile(f){
+    drop.classList.remove('has','bad');
+    if(!f){dropMsg.textContent=defaultDrop;return}
+    if(!/^image\/(png|jpeg)$/.test(f.type)){dropMsg.textContent='Formato no válido. Usa PNG o JPG.';drop.classList.add('bad');file.value='';return}
+    if(f.size>5*1024*1024){dropMsg.textContent='El archivo supera 5 MB.';drop.classList.add('bad');file.value='';return}
+    dropMsg.textContent=f.name;drop.classList.add('has');
+  }
+  file.addEventListener('change',function(){showFile(file.files[0])});
+  ['dragenter','dragover'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.add('over')})});
+  ['dragleave','drop'].forEach(function(t){drop.addEventListener(t,function(){drop.classList.remove('over')})});
+  drop.addEventListener('drop',function(e){
+    e.preventDefault();
+    var f=e.dataTransfer&&e.dataTransfer.files[0]; if(!f)return;
+    try{var dt=new DataTransfer();dt.items.add(f);file.files=dt.files}catch(_){}
+    showFile(f);
+  });
+
+  /* guardar */
+  var form=$('form'), btnSave=$('btnSave'), saving=false;
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    if(saving)return;
+    $('cancelConfirm').hidden=true;
+    var bad=fields.filter(function(id){return problem(id)});
+    fields.forEach(function(id){showErr(id,problem(id))});
+    if(bad.length){
+      refreshBanner(); setState('Error'); $(bad[0]).focus(); return;
+    }
+    $('errBanner').hidden=true;
+    saving=true; btnSave.disabled=true;
+    btnSave.innerHTML='<span class="spin" aria-hidden="true"></span>Guardando evento…';
+    setState('Durante');
+    setTimeout(function(){
+      saving=false;
+      buildSummary();
+      $('screenForm').hidden=true; $('screenOk').hidden=false;
+      btnSave.disabled=false; btnSave.textContent='Guardar evento';
+      setState('Éxito');
+      $('screenOk').scrollIntoView({block:'nearest'});
+    },1400);
+  });
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function buildSummary(){
+    var d=new Date($('fecha').value+'T12:00:00');
+    var fecha=isNaN(d)?$('fecha').value:d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    var tags=[].slice.call(tagBox.querySelectorAll('.tag[aria-pressed="true"]')).map(function(b){return b.textContent});
+    var rows=[['Título',$('titulo').value.trim()],['Fecha',fecha],['Lugar',$('lugar').value],['Plazas',$('plazas').value]];
+    if(tags.length)rows.push(['Etiquetas',tags.join(', ')]);
+    if(file.files[0])rows.push(['Imagen',file.files[0].name]);
+    $('summary').innerHTML=rows.map(function(r){return '<dt>'+r[0]+'</dt><dd>'+esc(r[1])+'</dd>'}).join('');
+  }
+
+  /* cancelar / volver / reiniciar */
+  function askCancel(){$('cancelConfirm').hidden=false;$('cancelConfirm').scrollIntoView({block:'nearest'})}
+  $('btnCancel').addEventListener('click',askCancel);
+  $('btnBack').addEventListener('click',askCancel);
+  $('keepEditing').addEventListener('click',function(){$('cancelConfirm').hidden=true});
+  function resetAll(){
+    form.reset();
+    fields.forEach(function(id){showErr(id,'')});
+    tagBox.querySelectorAll('.tag[aria-pressed="true"]').forEach(function(b){b.setAttribute('aria-pressed','false')});
+    tagBox.querySelectorAll('.tag:not(.add)').forEach(function(b){if(['Música','Cultura','Concierto'].indexOf(b.textContent)<0)b.remove()});
+    newTag.hidden=true; showFile(null);
+    $('errBanner').hidden=true; $('cancelConfirm').hidden=true;
+    $('screenOk').hidden=true; $('screenForm').hidden=false;
+    saving=false; btnSave.disabled=false; btnSave.textContent='Guardar evento';
+    setState('Antes');
+  }
+  $('discard').addEventListener('click',resetAll);
+  $('btnAgain').addEventListener('click',resetAll);
+  $('resetBtn').addEventListener('click',resetAll);
+})();
+</script>
+
+</body></html>
